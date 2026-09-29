@@ -5,7 +5,7 @@ const documentIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9
 
 function requireUserId(req, res, next) {
   const owner = req.get('X-User-Id')?.trim();
-  if (!owner || owner.length > 128) {
+  if (!owner || owner.length > 128 || /[\u0000-\u001f\u007f]/.test(owner)) {
     return next(documentService.createError(
       400,
       'INVALID_USER_ID',

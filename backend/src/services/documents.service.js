@@ -1,4 +1,3 @@
-const fs = require('node:fs/promises');
 const documentRepository = require('../repositories/documents.repository');
 
 function createError(statusCode, code, message) {
@@ -50,17 +49,15 @@ async function getDocumentForDownload(id, owner) {
     throw createError(404, 'DOCUMENT_NOT_FOUND', 'Documento não encontrado.');
   }
 
-  const filePath = documentRepository.getFilePath(document.storedFilename);
   try {
-    await fs.stat(filePath);
+    const filePath = await documentRepository.assertFileAvailable(document.storedFilename);
+    return { document: toPublicDocument(document), filePath };
   } catch (error) {
     if (error.code === 'ENOENT') {
       throw createError(404, 'DOCUMENT_NOT_FOUND', 'Documento não encontrado.');
     }
     throw error;
   }
-
-  return { document: toPublicDocument(document), filePath };
 }
 
 module.exports = {

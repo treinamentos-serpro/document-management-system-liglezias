@@ -11,15 +11,28 @@ async function readResponse(response) {
   throw error;
 }
 
+async function readJsonResponse(response, property) {
+  const body = await response.json().catch(() => null);
+  if (!body || typeof body !== 'object' || !(property in body)) {
+    throw new Error('A resposta do servidor está em formato inválido.');
+  }
+  return body[property];
+}
+
 function userHeaders(userId) {
   return { 'X-User-Id': userId };
 }
 
-export async function listDocuments(userId) {
+export async function listDocuments(userId, signal) {
   const response = await readResponse(await fetch(`${apiPrefix}/documents`, {
     headers: userHeaders(userId),
+    signal,
   }));
-  return (await response.json()).documents;
+  const documents = await readJsonResponse(response, 'documents');
+  if (!Array.isArray(documents)) {
+    throw new Error('A resposta de documentos está em formato inválido.');
+  }
+  return documents;
 }
 
 export async function uploadDocument(userId, file) {
@@ -30,7 +43,11 @@ export async function uploadDocument(userId, file) {
     headers: userHeaders(userId),
     body: formData,
   }));
-  return (await response.json()).document;
+  const document = await readJsonResponse(response, 'document');
+  if (!document || typeof document !== 'object') {
+    throw new Error('A resposta de upload está em formato inválido.');
+  }
+  return document;
 }
 
 export async function downloadDocument(userId, documentId) {

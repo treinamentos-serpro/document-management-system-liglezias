@@ -38,10 +38,25 @@ async function removeStoredFile(storedFilename) {
 }
 
 function getFilePath(storedFilename) {
-  if (path.basename(storedFilename) !== storedFilename) {
+  if (typeof storedFilename !== 'string' || path.basename(storedFilename) !== storedFilename) {
     throw new Error('Nome físico de arquivo inválido.');
   }
-  return path.join(storageDirectory, storedFilename);
+
+  const filePath = path.resolve(storageDirectory, storedFilename);
+  const storagePrefix = `${storageDirectory}${path.sep}`;
+  if (!filePath.startsWith(storagePrefix)) {
+    throw new Error('Caminho físico de arquivo inválido.');
+  }
+  return filePath;
+}
+
+async function assertFileAvailable(storedFilename) {
+  const filePath = getFilePath(storedFilename);
+  const fileStats = await fs.lstat(filePath);
+  if (!fileStats.isFile()) {
+    throw new Error('O armazenamento não contém um arquivo regular.');
+  }
+  return filePath;
 }
 
 module.exports = {
@@ -50,6 +65,7 @@ module.exports = {
   findByIdAndOwner,
   findByOwner,
   getFilePath,
+  assertFileAvailable,
   removeStoredFile,
   storageDirectory,
 };

@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const documentController = require('../src/controllers/documents.controller');
 
 const storageDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'dms-test-'));
 process.env.STORAGE_DIR = storageDirectory;
@@ -36,6 +37,10 @@ function uploadFile(owner, name, content) {
 }
 
 test('gerencia documentos locais isolados por usuário', async () => {
+  const health = await fetch(`${baseUrl}/health`);
+  assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(health.headers.get('x-frame-options'), 'DENY');
+
   const missingOwner = await uploadFile('', 'document.txt', 'conteúdo');
   assert.equal(missingOwner.status, 400);
   assert.equal((await missingOwner.json()).error.code, 'INVALID_USER_ID');
@@ -55,11 +60,29 @@ test('gerencia documentos locais isolados por usuário', async () => {
   assert.equal(document.size, Buffer.byteLength('conteúdo do documento'));
   assert.match(document.uploadedAt, /^\d{4}-\d\d-\d\dT/);
 
+  const traversalName = await uploadFile('usuario-a', '../fora-do-storage.txt', 'conteúdo seguro');
+  assert.equal(traversalName.status, 201);
+  const { document: traversalDocument } = await traversalName.json();
+  assert.match(traversalDocument.id, /^[0-9a-f-]{36}$/i);
+  assert.equal(traversalDocument.originalName, 'fora-do-storage.txt');
+
+  let invalidControlOwner;
+  documentController.requireUserId(
+    { get: () => 'usuario-\u0007' },
+    {},
+    (error) => { invalidControlOwner = error; },
+  );
+  assert.equal(invalidControlOwner.statusCode, 400);
+  assert.equal(invalidControlOwner.code, 'INVALID_USER_ID');
+
   const ownList = await fetch(`${baseUrl}/documents`, {
     headers: { 'X-User-Id': 'usuario-a' },
   });
   assert.equal(ownList.status, 200);
-  assert.deepEqual((await ownList.json()).documents.map(({ id }) => id), [document.id]);
+  assert.deepEqual((await ownList.json()).documents.map(({ id }) => id), [
+    traversalDocument.id,
+    document.id,
+  ]);
 
   const otherList = await fetch(`${baseUrl}/documents`, {
     headers: { 'X-User-Id': 'usuario-b' },
@@ -71,6 +94,12 @@ test('gerencia documentos locais isolados por usuário', async () => {
     { headers: { 'X-User-Id': 'usuario-b' } },
   );
   assert.equal(unauthorizedDownload.status, 404);
+
+  const invalidDocument = await fetch(`${baseUrl}/documents/not-a-uuid/download`, {
+    headers: { 'X-User-Id': 'usuario-a' },
+  });
+  assert.equal(invalidDocument.status, 400);
+  assert.equal((await invalidDocument.json()).error.code, 'INVALID_DOCUMENT_ID');
 
   const download = await fetch(`${baseUrl}/documents/${document.id}/download`, {
     headers: { 'X-User-Id': 'usuario-a' },

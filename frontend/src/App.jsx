@@ -20,15 +20,16 @@ export default function App() {
 
   useEffect(() => {
     let current = true;
+    const controller = new AbortController();
     setLoading(true);
     setError('');
 
-    listDocuments(activeUser)
+    listDocuments(activeUser, controller.signal)
       .then((items) => {
         if (current) setDocuments(items);
       })
       .catch((requestError) => {
-        if (current) setError(requestError.message);
+        if (current && requestError.name !== 'AbortError') setError(requestError.message);
       })
       .finally(() => {
         if (current) setLoading(false);
@@ -36,6 +37,7 @@ export default function App() {
 
     return () => {
       current = false;
+      controller.abort();
     };
   }, [activeUser]);
 
@@ -78,8 +80,11 @@ export default function App() {
       const link = window.document.createElement('a');
       link.href = objectUrl;
       link.download = document.originalName;
+      link.hidden = true;
+      window.document.body.append(link);
       link.click();
-      URL.revokeObjectURL(objectUrl);
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -113,9 +118,12 @@ export default function App() {
                 id="user-id"
                 value={userId}
                 maxLength={128}
+                disabled={uploading}
                 onChange={(event) => setUserId(event.target.value)}
               />
-              <button className="button button--secondary" type="submit">Acessar</button>
+              <button className="button button--secondary" type="submit" disabled={uploading}>
+                Acessar
+              </button>
             </div>
           </form>
         </section>
