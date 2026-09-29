@@ -135,7 +135,12 @@ jobs:
 
       - name: Disable current workflow and enable next one
         run: |
-          gh workflow disable "4-agents-community.yml"
+          if ! disable_output=$(gh workflow disable "4-agents-community.yml" 2>&1); then
+            if [[ "$disable_output" != *"Unable to disable a workflow that is not active"* ]]; then
+              echo "$disable_output" >&2
+              exit 1
+            fi
+          fi
           gh workflow enable "5-coding-agent.yml"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
