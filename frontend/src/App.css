@@ -1,0 +1,261 @@
+:root {
+  font-family: "IBM Plex Sans", "Trebuchet MS", sans-serif;
+  color: #1e2826;
+  background: #f2f5f2;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  font-weight: 400;
+  --ink: #1e2826;
+  --muted: #63706b;
+  --line: #d8e0da;
+  --paper: #ffffff;
+  --green: #176c51;
+  --green-dark: #10563f;
+  --mint: #e5f1ea;
+  --coral: #b54b38;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background-color: #f2f5f2;
+  background-image: radial-gradient(#dbe4dc 0.7px, transparent 0.7px);
+  background-size: 18px 18px;
+}
+
+button, input { font: inherit; }
+
+button:focus-visible, input:focus-visible, a:focus-visible {
+  outline: 3px solid #e7a14c;
+  outline-offset: 3px;
+}
+
+.workspace { min-height: 100vh; }
+
+.topbar {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(28px, calc((100vw - 1120px) / 2));
+  color: #f8faf7;
+  background: #183d32;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.wordmark__mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #a5c8b3;
+  color: #cde3d3;
+  font-family: Georgia, serif;
+  font-size: 17px;
+}
+
+.topbar__caption, .eyebrow, .footer {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.topbar__caption { color: #bdd0c5; }
+
+.content {
+  width: min(100% - 48px, 960px);
+  margin: 0 auto;
+  padding: 52px 0 88px;
+}
+
+.page-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 36px;
+  padding: 0 0 34px;
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  margin: 0 0 9px;
+  color: var(--green);
+}
+
+h1, h2, p { margin-top: 0; }
+
+h1 {
+  margin-bottom: 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.12;
+}
+
+.page-heading__description { margin: 0; color: var(--muted); }
+
+.user-form { width: min(100%, 310px); }
+.user-form label, .file-picker__label {
+  display: block;
+  margin-bottom: 7px;
+  color: #53615b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.user-form__controls { display: flex; gap: 8px; }
+.user-form input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 11px;
+  border: 1px solid #bac8bf;
+  border-radius: 3px;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.button {
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  padding: 0 15px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.button:disabled { cursor: not-allowed; opacity: 0.58; }
+.button--primary { color: #fff; background: var(--green); }
+.button--primary:hover:not(:disabled) { background: var(--green-dark); }
+.button--secondary { border-color: #a8bcb0; color: #214e3d; background: #f9fbf8; }
+.button--quiet { min-height: 34px; border-color: #c5d5ca; color: var(--green-dark); background: #fff; }
+
+.section {
+  padding: 28px 0 30px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 500;
+}
+
+.section-heading .eyebrow { margin-bottom: 5px; }
+
+.upload-form {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  max-width: 650px;
+}
+
+.file-picker { flex: 1; min-width: 0; }
+.file-picker input {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  padding: 7px;
+  border: 1px solid #bac8bf;
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.documents-section { padding-bottom: 0; border-bottom: 0; }
+.section-heading--list { margin-bottom: 14px; }
+.document-count {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--green-dark);
+  background: var(--mint);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: #65736c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+}
+td { padding: 13px 14px; border-bottom: 1px solid #e4e9e5; color: #596660; font-size: 13px; }
+th:first-child, td:first-child { padding-left: 2px; }
+th:last-child, td:last-child { padding-right: 2px; }
+.document-name { max-width: 400px; color: var(--ink); overflow-wrap: anywhere; font-weight: 600; }
+.table-action { text-align: right; }
+.empty-state { margin: 0; padding: 24px 0; color: var(--muted); font-size: 14px; }
+.message { margin: 20px 0 0; padding: 11px 14px; border-left: 3px solid; font-size: 13px; }
+.message--error { border-color: var(--coral); color: #823a2d; background: #fff0ec; }
+.message--success { border-color: var(--green); color: var(--green-dark); background: var(--mint); }
+
+.footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 10px 24px;
+  border-top: 1px solid #d8e0da;
+  color: #65736c;
+  background: rgb(242 245 242 / 94%);
+  text-align: center;
+  letter-spacing: 0.7px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+@media (max-width: 680px) {
+  .topbar { height: 58px; padding: 0 20px; }
+  .topbar__caption { font-size: 9px; }
+  .content { width: min(100% - 36px, 960px); padding-top: 34px; }
+  .page-heading { align-items: stretch; flex-direction: column; gap: 24px; }
+  h1 { font-size: 32px; }
+  .user-form { width: 100%; }
+  .upload-form { align-items: stretch; flex-direction: column; }
+  .upload-form .button { align-self: flex-start; }
+  th, td { padding: 11px 9px; }
+  th:nth-child(2), td:nth-child(2) { white-space: nowrap; }
+  th:nth-child(3), td:nth-child(3) { min-width: 132px; }
+  .button--quiet { padding: 0 10px; }
+  .footer { font-size: 9px; }
+}

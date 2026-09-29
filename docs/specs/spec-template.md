@@ -10,9 +10,9 @@ Descreva em uma frase o que o sistema deve entregar.
 
 ## 2. Escopo
 
-### Dentro do escopo
+### Dentro do escopo  
 
-- Upload de documentos
+- Upload de documentos 
 - Listagem de documentos
 - Download de documentos
 - Gestão simples por usuário
