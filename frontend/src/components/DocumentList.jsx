@@ -1,3 +1,5 @@
+import DownloadButton from './DownloadButton.jsx';
+
 function formatSize(size) {
   return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(size / 1024);
 }
@@ -32,16 +34,12 @@ export default function DocumentList({ documents, downloadingId, onDownload }) {
               <td>{formatSize(document.size)} KB</td>
               <td>{formatDate(document.uploadedAt)}</td>
               <td className="table-action">
-                <button
-                  className="button button--quiet"
-                  type="button"
+                <DownloadButton
+                  document={document}
                   disabled={Boolean(downloadingId)}
-                  onClick={() => onDownload(document)}
-                  aria-label={`Baixar ${document.originalName}`}
-                  title="Baixar documento"
-                >
-                  {downloadingId === document.id ? 'Baixando...' : 'Baixar'}
-                </button>
+                  loading={downloadingId === document.id}
+                  onDownload={onDownload}
+                />
               </td>
             </tr>
           ))}

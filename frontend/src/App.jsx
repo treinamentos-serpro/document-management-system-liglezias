@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import DocumentList from './components/DocumentList.jsx';
-import UploadForm from './components/UploadForm.jsx';
+import UploadComponent from './components/UploadComponent.jsx';
 import {
   downloadDocument,
   listDocuments,
@@ -130,7 +130,7 @@ export default function App() {
               <h2 id="upload-title">Enviar documento</h2>
             </div>
           </div>
-          <UploadForm disabled={uploading} onUpload={handleUpload} />
+          <UploadComponent disabled={uploading} onUpload={handleUpload} />
         </section>
 
         <section className="section documents-section" aria-labelledby="documents-title">
