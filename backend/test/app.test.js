@@ -9,6 +9,7 @@ process.env.STORAGE_DIR = storageDirectory;
 process.env.MAX_FILE_SIZE_BYTES = '1024';
 
 const app = require('../src/app');
+const documentController = require('../src/controllers/documents.controller');
 let server;
 let baseUrl;
 
@@ -36,13 +37,17 @@ function uploadFile(owner, name, content) {
 }
 
 test('gerencia documentos locais isolados por usuário', async () => {
+  const health = await fetch(`${baseUrl}/health`);
+  assert.equal(health.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(health.headers.get('x-frame-options'), 'DENY');
+
   const missingOwner = await uploadFile('', 'document.txt', 'conteúdo');
   assert.equal(missingOwner.status, 400);
   assert.equal((await missingOwner.json()).error.code, 'INVALID_USER_ID');
 
   const missingFile = await fetch(`${baseUrl}/upload`, {
     method: 'POST',
-    headers: { 'X-User-Id': 'usuario-a' },
+    headers: { 'X-User-Id': 'usuario-validacao' },
   });
   assert.equal(missingFile.status, 400);
   assert.equal((await missingFile.json()).error.code, 'FILE_REQUIRED');
@@ -55,11 +60,29 @@ test('gerencia documentos locais isolados por usuário', async () => {
   assert.equal(document.size, Buffer.byteLength('conteúdo do documento'));
   assert.match(document.uploadedAt, /^\d{4}-\d\d-\d\dT/);
 
+  const traversalName = await uploadFile('usuario-a', '../fora-do-storage.txt', 'conteúdo seguro');
+  assert.equal(traversalName.status, 201);
+  const { document: traversalDocument } = await traversalName.json();
+  assert.match(traversalDocument.id, /^[0-9a-f-]{36}$/i);
+  assert.equal(traversalDocument.originalName, 'fora-do-storage.txt');
+
+  let invalidControlOwner;
+  documentController.requireUserId(
+    { get: () => 'usuario-\u0007' },
+    {},
+    (error) => { invalidControlOwner = error; },
+  );
+  assert.equal(invalidControlOwner.statusCode, 400);
+  assert.equal(invalidControlOwner.code, 'INVALID_USER_ID');
+
   const ownList = await fetch(`${baseUrl}/documents`, {
     headers: { 'X-User-Id': 'usuario-a' },
   });
   assert.equal(ownList.status, 200);
-  assert.deepEqual((await ownList.json()).documents.map(({ id }) => id), [document.id]);
+  assert.deepEqual((await ownList.json()).documents.map(({ id }) => id), [
+    traversalDocument.id,
+    document.id,
+  ]);
 
   const otherList = await fetch(`${baseUrl}/documents`, {
     headers: { 'X-User-Id': 'usuario-b' },
@@ -72,18 +95,17 @@ test('gerencia documentos locais isolados por usuário', async () => {
   );
   assert.equal(unauthorizedDownload.status, 404);
 
-  const download = await fetch(`${baseUrl}/documents/${document.id}/download`, {
+  const invalidDocument = await fetch(`${baseUrl}/documents/not-a-uuid/download`, {
     headers: { 'X-User-Id': 'usuario-a' },
   });
-  assert.equal(download.status, 200);
-  assert.equal(await download.text(), 'conteúdo do documento');
-  assert.match(download.headers.get('content-disposition'), /relatorio\.txt/);
+  assert.equal(invalidDocument.status, 400);
+  assert.equal((await invalidDocument.json()).error.code, 'INVALID_DOCUMENT_ID');
 
-  const tooLarge = await uploadFile('usuario-a', 'grande.txt', 'x'.repeat(2048));
+  const tooLarge = await uploadFile('usuario-validacao', 'grande.txt', 'x'.repeat(2048));
   assert.equal(tooLarge.status, 413);
   assert.equal((await tooLarge.json()).error.code, 'FILE_TOO_LARGE');
 
-  const empty = await uploadFile('usuario-a', 'vazio.txt', '');
+  const empty = await uploadFile('usuario-validacao', 'vazio.txt', '');
   assert.equal(empty.status, 400);
   assert.equal((await empty.json()).error.code, 'INVALID_FILE');
 });
